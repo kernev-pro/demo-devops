@@ -1,0 +1,48 @@
+---
+name: CI - Lint & Validation
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint Code & Playbooks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Vérifier la syntaxe YAML
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: .
+          config_data: |
+            extends: default
+            rules:
+              line-length: disable
+              truthy: disable
+              document-start: disable
+              brackets:
+                min-spaces-inside: 0
+                max-spaces-inside: 1
+              trailing-spaces: disable
+
+      - name: Configurer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Installer ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible
+
+      - name: Valider la syntaxe des playbooks
+        run: |
+          cd ansible
+          ansible-playbook playbooks/site.yml --syntax-check
+          ansible-playbook playbooks/setup-monitoring.yml --syntax-check
