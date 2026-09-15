@@ -1,0 +1,20 @@
+groups:
+  - name: infrastructure_alerts
+    rules:
+      - alert: HighCpuTemperature
+        expr: node_hwmon_temp_celsius > 42
+        for: 10s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Température CPU élevée sur {{ $labels.instance }}"
+          description: "La température dépasse 80°C depuis plus de 2 minutes."
+
+      - alert: LowDiskSpace
+        expr: (node_filesystem_free_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 5
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Espace disque critique sur {{ $labels.instance }}"
+          description: "Il reste moins de 5% d'espace libre sur la partition racine."
