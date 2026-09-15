@@ -1,6 +1,6 @@
 ---
 - name: Déploiement et mise à jour de la stack Prometheus
-  hosts: lattepanda
+  hosts: lattepanda, vps-distant
   become: true
   vars:
     source_dir: "{{ playbook_dir }}/../../monitoring/prometheus"
@@ -11,16 +11,16 @@
       ansible.builtin.file:
         path: "{{ target_dir }}"
         state: directory
-        owner: tom
-        group: tom
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
         mode: '0755'
 
     - name: Déployer les fichiers de configuration de la stack
       ansible.builtin.copy:
         src: "{{ item }}"
         dest: "{{ target_dir }}/"
-        owner: tom
-        group: tom
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
         mode: '0644'
       with_fileglob:
         - "{{ source_dir }}/*.yml"
@@ -31,8 +31,8 @@
       ansible.builtin.copy:
         src: "{{ source_dir }}/docker-compose.yml"
         dest: "{{ target_dir }}/docker-compose.yml"
-        owner: tom
-        group: tom
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
         mode: '0644'
       notify: Redémarrer la stack Docker
 
