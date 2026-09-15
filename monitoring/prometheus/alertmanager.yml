@@ -1,0 +1,11 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: 'discord-notifications'
+
+receivers:
+  - name: 'discord-notifications'
+    webhook_configs:
+      - url: 'https://discord.com/api/webhooks/TON_ID_WEBHOOK/TON_TOKEN_WEBHOOK'
+        send_resolved: true

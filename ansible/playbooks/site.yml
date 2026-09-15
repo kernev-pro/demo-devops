@@ -1,0 +1,53 @@
+---
+- name: Configuration et durcissement de l'infrastructure Homelab
+  hosts: all
+  become: yes
+  tasks:
+    
+    - name: Mettre à jour le cache des paquets apt
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Installer Node Exporter sur le VPS distant
+      when: inventory_hostname == 'vps-distant'
+      block:
+        - name: Télécharger node_exporter
+          get_url:
+            url: https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz
+            dest: /tmp/node_exporter.tar.gz
+
+        - name: Extraire l'archive
+          unarchive:
+            src: /tmp/node_exporter.tar.gz
+            dest: /tmp/
+            remote_src: yes
+
+        - name: Copier le binaire dans /usr/local/bin
+          copy:
+            src: /tmp/node_exporter-1.8.2.linux-amd64/node_exporter
+            dest: /usr/local/bin/node_exporter
+            mode: '0755'
+            remote_src: yes
+
+        - name: Créer le service systemd node-exporter
+          copy:
+            content: |
+              [Unit]
+              Description=Node Exporter
+              After=network.target
+
+              [Service]
+              User=nobody
+              ExecStart=/usr/local/bin/node_exporter
+
+              [Install]
+              WantedBy=multi-user.target
+            dest: /etc/systemd/system/node-exporter.service
+
+        - name: Activer et démarrer le service node-exporter
+          systemd:
+            name: node-exporter
+            state: restarted
+            daemon_reload: yes
+            enabled: yes
