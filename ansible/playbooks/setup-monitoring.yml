@@ -1,0 +1,50 @@
+---
+- name: Déploiement et mise à jour de la stack Prometheus
+  hosts: lattepanda
+  become: true
+  vars:
+    source_dir: "{{ playbook_dir }}/../../monitoring/prometheus"
+    target_dir: "/opt/docker-stacks/prometheus"
+
+  tasks:
+    - name: S'assurer que le répertoire de destination existe
+      ansible.builtin.file:
+        path: "{{ target_dir }}"
+        state: directory
+        owner: tom
+        group: tom
+        mode: '0755'
+
+    - name: Déployer les fichiers de configuration de la stack
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ target_dir }}/"
+        owner: tom
+        group: tom
+        mode: '0644'
+      with_fileglob:
+        - "{{ source_dir }}/*.yml"
+        - "{{ source_dir }}/*.yaml"
+      notify: Recharger Prometheus
+
+    - name: Déployer le fichier docker-compose.yml
+      ansible.builtin.copy:
+        src: "{{ source_dir }}/docker-compose.yml"
+        dest: "{{ target_dir }}/docker-compose.yml"
+        owner: tom
+        group: tom
+        mode: '0644'
+      notify: Redémarrer la stack Docker
+
+  handlers:
+    - name: Recharger Prometheus
+      ansible.builtin.uri:
+        url: http://localhost:9090/-/reload
+        method: POST
+        status_code: 200
+      ignore_errors: true
+
+    - name: Redémarrer la stack Docker
+      ansible.builtin.command:
+        cmd: docker compose up -d --remove-orphans
+        chdir: "{{ target_dir }}"
