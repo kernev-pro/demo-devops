@@ -2,8 +2,8 @@ groups:
   - name: infrastructure_alerts
     rules:
       - alert: HighCpuTemperature
-        expr: node_hwmon_temp_celsius > 42
-        for: 10s
+        expr: node_hwmon_temp_celsius > 80
+        for: 2m
         labels:
           severity: warning
         annotations:

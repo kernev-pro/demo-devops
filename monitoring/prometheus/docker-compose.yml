@@ -21,6 +21,17 @@ services:
       - "9093:9093"
     volumes:
       - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--log.level=info'
+
+  discord-webhook:
+    image: benjojo/alertmanager-discord:latest
+    container_name: alertmanager-discord
+    restart: unless-stopped
+    environment:
+      - 'DISCORD_WEBHOOK=https://discord.com/api/webhooks/1549533874369855488/_5w_AyuJRsbFzezxoNTFxK0-IGHXqCqR6A56CUFc57SSxFLSMdxh9aJMMosJQRj1nVbq'
 
   node-exporter:
     image: prom/node-exporter:latest
