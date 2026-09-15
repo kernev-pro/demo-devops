@@ -3,9 +3,13 @@ global:
 
 route:
   receiver: 'discord-notifications'
+  group_by: ['alertname', 'instance']
+  group_wait: 5s
+  group_interval: 1m
+  repeat_interval: 4h
 
 receivers:
   - name: 'discord-notifications'
     webhook_configs:
-      - url: 'https://discord.com/api/webhooks/TON_ID_WEBHOOK/TON_TOKEN_WEBHOOK'
+      - url: 'http://discord-webhook:9094'
         send_resolved: true
